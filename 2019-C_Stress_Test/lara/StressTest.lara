@@ -14,16 +14,19 @@ aspectdef StressTest
 
 	var srcFolder = Io.getPath(Clava.getData().getContextFolder(), srcFoldername);
 	var outputFolder = Io.mkdir(Clava.getData().getContextFolder(), "output");
-
+	var cmakeFolder = Io.mkdir(Clava.getData().getContextFolder(), "cmake");
+	
 	// Object to collect data
 	var stats = {};
 
 	for(var srcFile of Io.getFiles(srcFolder, "*.c")) {
 	try{
 		println("Processing file '"+srcFile+"'");
-		//if(srcFile.getName() !== "NAS_IS.c") {
-		//	continue;
-		//}
+
+		var benchName = Io.removeExtension(srcFile.getName());
+		if(srcFile.getName() !== "NAS_IS.c") {
+			continue;
+		}
 		
 		// Add program
 		Clava.getProgram().addFileFromPath(srcFile);
@@ -44,7 +47,7 @@ aspectdef StressTest
 
 
 		// Graph file
-		var graphFile = Io.getPath(outputFolder, Io.removeExtension(srcFile.getName()) + ".dot");
+		var graphFile = Io.getPath(outputFolder, benchName + ".dot");
 
 		// Apply dynamic call graph	
 		var dcgStart = System.nanos();	
@@ -65,7 +68,9 @@ aspectdef StressTest
     				 .setMakeCommand("mingw32-make");
     		}
 
-    		var exe = cmaker.build();
+		var cmakelistsFolder = Io.mkdir(cmakeFolder, benchName);
+		var buildFolder = Io.mkdir(cmakelistsFolder, "build");
+    		var exe = cmaker.build(cmakelistsFolder, buildFolder);
 
 		// Run program
 		 var executor = new ProcessExecutor();
