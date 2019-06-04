@@ -81,6 +81,9 @@ aspectdef StressTest
 		Io.writeJson(Io.getPath(Clava.getData().getContextFolder(), "stats.json"), stats);
 	}catch(e) {
 		println("Skipping " + srcFile + ", there are problems: " + e);
+
+		// Clean program
+		Clava.getProgram().removeChildren();
 	}
 	}
 
