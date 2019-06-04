@@ -1,0 +1,50 @@
+import lara.Io;
+import clava.Clava;
+import lara.cmake.CMaker;
+
+import DynamicCallGraph;
+
+aspectdef StressTest
+	input srcFoldername end
+
+
+	var srcFolder = Io.getPath(Clava.getData().getContextFolder(), srcFoldername);
+
+
+	for(var srcFile of Io.getFiles(srcFolder, "*.c")) {
+		if(srcFile.getName() !== "NAS_IS.c") {
+			continue;
+		}
+		
+		// Add program
+		Clava.getProgram().addFileFromPath(srcFile);
+		
+		// Rebuild tree
+		Clava.rebuild();
+
+		// Apply dynamic call graph		
+		call DynamicCallGraph();
+
+
+		// Compile program
+		 var cmaker = new CMaker("callgraph", false);
+    		 var exe = cmaker.addCurrentAst()
+    		 	.setGenerator("MinGW Makefiles")
+    			.setMakeCommand("mingw32-make")
+    			.build();
+
+
+		// Run program
+		 var executor = new ProcessExecutor();
+    		executor.setPrintToConsole(false)
+    			.execute([exe.getAbsolutePath()]);
+
+		// Get call graph
+		println(executor.getConsoleOutput());
+
+		// Clean program
+		Clava.getProgram().removeChildren();
+	}
+
+
+end
