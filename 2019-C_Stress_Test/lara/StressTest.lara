@@ -1,4 +1,7 @@
 import lara.Io;
+import lara.Strings;
+import lara.System;
+import lara.util.StringSet;
 import clava.Clava;
 import lara.cmake.CMaker;
 
@@ -11,23 +14,44 @@ aspectdef StressTest
 	var srcFolder = Io.getPath(Clava.getData().getContextFolder(), srcFoldername);
 	var outputFolder = Io.mkdir(Clava.getData().getContextFolder(), "output");
 
+	// Object to collect data
+	var stats = {};
 
 	for(var srcFile of Io.getFiles(srcFolder, "*.c")) {
-		if(srcFile.getName() !== "NAS_IS.c") {
-			continue;
-		}
+	try{
+		//if(srcFile.getName() !== "NAS_IS.c") {
+		//	continue;
+		//}
 		
 		// Add program
 		Clava.getProgram().addFileFromPath(srcFile);
 		
 		// Rebuild tree
+		var parsingStart = System.nanos();
 		Clava.rebuild();
+		var parsingTime = System.toc(parsingStart);
+		
+		// Count Clava nodes before instrumentation
+		var clavaNodes = Clava.getProgram().children[0].descendants.length;
+
+		// Count lines after parsing but before instrumentation
+		var linesBeforeDcg = countNonBlankLines(Clava.getProgram().children[0].code);
+
+		// Save non instrumented file
+		Clava.getProgram().children[0].write(Io.mkdir(outputFolder, "original"));
+
 
 		// Graph file
 		var graphFile = Io.getPath(outputFolder, Io.removeExtension(srcFile.getName()) + ".dot");
 
-		// Apply dynamic call graph		
+		// Apply dynamic call graph	
+		var dcgStart = System.nanos();	
 		call DynamicCallGraph(Io.getAbsolutePath(graphFile));
+		var dcgTime = System.toc(dcgStart);
+
+		// Count lines after parsing, after instrumentation
+		var linesAfterDcg = countNonBlankLines(Clava.getProgram().children[0].code);
+		var linesInserted = linesAfterDcg - linesBeforeDcg;
 
 
 		// Compile program
@@ -43,15 +67,89 @@ aspectdef StressTest
     		executor.setPrintToConsole(false)
     			.execute([exe.getAbsolutePath()]);
 
-		// Get call graph
-		println(Io.readFile(graphFile));
-
 		// Save instrumented file
 		Clava.getProgram().children[0].write(outputFolder);
 
+		// Collect stats
+		stats[srcFile.getName()] = collectStats(srcFile, clavaNodes, linesInserted, 
+			parsingTime, dcgTime, graphFile);
+
 		// Clean program
 		Clava.getProgram().removeChildren();
+
+		// Write stats
+		Io.writeJson(Io.getPath(Clava.getData().getContextFolder(), "stats.json"), stats);
+	}catch(e) {
+		println("Skipping " + srcFile + ", there are problems: " + e);
+	}
 	}
 
 
+	println("Stats:");
+	printlnObject(stats);
+
 end
+
+function collectStats(srcFile, clavaNodes, linesInserted, parsingTime, dcgTime, graphFile) {
+	var stats = {};
+
+	stats["Code Lines"] = Io.readFile(srcFile).lines().count();
+	stats["Clava Nodes"] = clavaNodes;
+	stats["Inserted Lines"] = linesInserted;
+	stats["Parsing"] = parsingTime;
+	stats["Dynamic Call Graph"] = dcgTime;
+
+	// Call graph stats
+	var callGraph = Io.readFile(graphFile);
+
+	var edges = 0;
+	var nodes = new StringSet();
+	
+	for(var line of Strings.asLines(callGraph)) {
+		if(line.isBlank() || line.startsWith("}") || line.startsWith("digraph dynamic_call_graph")) {
+			continue;
+		}
+
+		// Count edge
+		edges++;
+
+		// Dot follows this format:
+		// NODE1 -> NODE2 [label="<a number>"];
+		var parts = line.split("->");
+		nodes.add(parts[0].trim());
+
+		var parts2 = parts[1].trim().split(" ");
+		nodes.add(parts2[0].trim());
+	}
+
+	stats["Graph Nodes"] = nodes.values().length;
+	stats["Graph Edges"] = edges;
+
+	return stats;
+}
+
+function countNonBlankLines(code) {
+	var counter = 0;
+	for(var line of Strings.asLines(code)) {
+		if(line.isBlank()) {
+		//if(line.strip().isEmpty()) {
+			continue;
+		}
+
+		// Do not count cases where {} where inserted
+		var strippedLine = line.strip();
+		if(strippedLine.equals("{")) {
+			continue;
+		}
+
+		if(strippedLine.equals("}")) {
+			continue;
+		}
+
+		counter++;
+	}
+println("LINES:" + counter);
+	return counter;
+}
+
+//Clava.getProgram().children[0]
