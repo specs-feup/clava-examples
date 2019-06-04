@@ -20,6 +20,7 @@ aspectdef StressTest
 
 	for(var srcFile of Io.getFiles(srcFolder, "*.c")) {
 	try{
+		println("Processing file '"+srcFile+"'");
 		//if(srcFile.getName() !== "NAS_IS.c") {
 		//	continue;
 		//}
