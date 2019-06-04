@@ -1,6 +1,7 @@
 import lara.Io;
 import lara.Strings;
 import lara.System;
+import lara.Platforms;
 import lara.util.StringSet;
 import clava.Clava;
 import lara.cmake.CMaker;
@@ -55,12 +56,15 @@ aspectdef StressTest
 
 
 		// Compile program
-		 var cmaker = new CMaker("callgraph", false);
-    		 var exe = cmaker.addCurrentAst()
-    		 	.setGenerator("MinGW Makefiles")
-    			.setMakeCommand("mingw32-make")
-    			.build();
+		var cmaker = new CMaker("callgraph", false);
+    		cmaker.addCurrentAst();
 
+    		if(Platforms.isWindows()) {
+    			cmaker.setGenerator("MinGW Makefiles")
+    				 .setMakeCommand("mingw32-make");
+    		}
+
+    		var exe = cmaker.build();
 
 		// Run program
 		 var executor = new ProcessExecutor();
