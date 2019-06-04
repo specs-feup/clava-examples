@@ -9,6 +9,7 @@ aspectdef StressTest
 
 
 	var srcFolder = Io.getPath(Clava.getData().getContextFolder(), srcFoldername);
+	var outputFolder = Io.mkdir(Clava.getData().getContextFolder(), "output");
 
 
 	for(var srcFile of Io.getFiles(srcFolder, "*.c")) {
@@ -22,8 +23,11 @@ aspectdef StressTest
 		// Rebuild tree
 		Clava.rebuild();
 
+		// Graph file
+		var graphFile = Io.getPath(outputFolder, Io.removeExtension(srcFile.getName()) + ".dot");
+
 		// Apply dynamic call graph		
-		call DynamicCallGraph();
+		call DynamicCallGraph(Io.getAbsolutePath(graphFile));
 
 
 		// Compile program
@@ -40,7 +44,10 @@ aspectdef StressTest
     			.execute([exe.getAbsolutePath()]);
 
 		// Get call graph
-		println(executor.getConsoleOutput());
+		println(Io.readFile(graphFile));
+
+		// Save instrumented file
+		Clava.getProgram().children[0].write(outputFolder);
 
 		// Clean program
 		Clava.getProgram().removeChildren();

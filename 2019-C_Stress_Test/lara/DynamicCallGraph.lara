@@ -6,7 +6,9 @@ import lara.code.Logger;
  * Instruments code in order to build a runtime call graph.
  */
 aspectdef DynamicCallGraph
+	input graphFile end
 
+	
     var obj = new LaraObject();
 
 	var dcgName = "clava_dcg_global";
@@ -36,6 +38,9 @@ aspectdef DynamicCallGraph
 	var callgraphFunctionName = "clava_call_graph";
 	var $callgraph = ClavaJoinPoints.functionDecl(callgraphFunctionName, ClavaJoinPoints.builtinType("void"));
 	$callgraph.setBody(ClavaJoinPoints.scope());
+	
+	// Using a comment as a marker for log insertions
+	var $markerStmt = $callgraph.body.insertBegin(ClavaJoinPoints.stmtLiteral("// MARKER"));
 
     // Insert function before main
     select program.function{"main"} end
@@ -43,9 +48,9 @@ aspectdef DynamicCallGraph
  		$function.insertBefore($callgraph);
     end
 
-	var graphLogger = new Logger();
+	var graphLogger = new Logger(false, graphFile);
 	graphLogger.append("digraph dynamic_call_graph {")
-		.ln().ln().log($callgraph.body);
+		.ln().ln().log($markerStmt);
 
 
 	var $lastStmt = graphLogger.getAfterJp();
@@ -57,60 +62,20 @@ aspectdef DynamicCallGraph
              var dcgCount = dcgName+"["+id+"]";
              $lastStmt = $lastStmt.insertAfter(ClavaJoinPoints.ifStmt(dcgCount + " != 0"));
              
-             graphLogger.append("\t"+f+" -> "+c+' [label=\"')
+             graphLogger.append("\t"+f+" -> "+c+' [label=\\"')
              		.int(dcgCount)
-             		.append('\"];').ln()
+             		.append('\\"];').ln()
              		.logBefore($lastStmt.then);
-             //callgraphCode += %{
-             //    if ([[dcgName]][ [[id]] ] != 0)
-             //        printf("\t[[f]] -> [[c]] [label=\"%d\"];\n", [[dcgName]][ [[id]] ]);
-             //}%;
          }
     }
 
 	graphLogger.append("}").ln().log($lastStmt);
 
-/*
-	var callgraphCode = "";
-	callgraphCode += 'printf("digraph dynamic_call_graph {\\n\\n");';
-    
-     for (f in obj) {
-         for (c in obj[f]) {
-    
-             var id = obj[f][c];
-             callgraphCode += %{
-                 if (call_graph[ [[id]] ] != 0)
-                     printf("\t[[f]] -> [[c]] [label=\"%d\"];\n", [[dcgName]][ [[id]] ]);
-             }%;
-         }
-    }
-    callgraphCode += %{printf("}\n");}%;
-    $callgraph.body.insertBegin(callgraphCode);
-*/
+	// Remove marker stmt
+	$markerStmt.detach();
 
 	// Register function to be executed when program exits
     Clava.getProgram().atexit($callgraph);
-
-	/*
-    select function{"main"} end
-    apply
-        
-        $function.insertReturn('printf("digraph call_graph {\\n\\n");');
-
-        for (f in obj) {
-            for (c in obj[f]) {
-
-                var id = obj[f][c];
-                $function.insertReturn(%{
-                    if (call_graph[ [[id]] ] != 0)
-                        printf("\t[[f]] -> [[c]] [label=\"%d\"];\n", call_graph[ [[id]] ]);
-                }%);
-            }
-        }
-        $function.insertReturn(%{printf("}\n");}%);
-    end
-    */
-
 
     println('\nDynamicCallGraph done!');
 end
