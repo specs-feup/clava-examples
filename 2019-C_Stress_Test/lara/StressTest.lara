@@ -14,7 +14,7 @@ aspectdef StressTest
 
 	var srcFolder = Io.getPath(Clava.getData().getContextFolder(), srcFoldername);
 	var outputFolder = Io.mkdir(Clava.getData().getContextFolder(), "output");
-	var cmakeFolder = Io.mkdir(Clava.getData().getContextFolder(), "cmake");
+	var cmakeFolder = Io.mkdir(Clava.getData().getContextFolder(), "cmake-build");
 	
 	// Object to collect data
 	var stats = {};
