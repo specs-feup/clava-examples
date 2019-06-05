@@ -45,7 +45,15 @@ aspectdef DynamicCallGraph
     // Insert function before main
     select program.function{"main"} end
     apply
+    		// Just before main declaration
+    		if(!$function.hasDefinition) {
+    			continue;
+    		}
+    		
  		$function.insertBefore($callgraph);
+
+		// Insert only once
+ 		break;
     end
 
 	var graphLogger = new Logger(false, graphFile);
