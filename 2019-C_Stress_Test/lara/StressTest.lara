@@ -11,7 +11,7 @@ import DynamicCallGraph;
 aspectdef StressTest
 	input srcFoldername end
 
-
+	setDebug();
 	var srcFolder = Io.getPath(Clava.getData().getContextFolder(), srcFoldername);
 	var outputFolder = Io.mkdir(Clava.getData().getContextFolder(), "output");
 	var cmakeFolder = Io.mkdir(Clava.getData().getContextFolder(), "cmake-build");
@@ -37,11 +37,13 @@ aspectdef StressTest
 		var parsingTime = System.toc(parsingStart);
 		
 		// Count Clava nodes before instrumentation
+		debug("Counting nodes before instrumentation...");
 		var clavaNodes = Clava.getProgram().children[0].descendants.length;
-
+		debug("Done, found " + clavaNode + " nodes");
+		
 		// Count lines after parsing but before instrumentation
 		var linesBeforeDcg = countNonBlankLines(Clava.getProgram().children[0].code);
-
+		
 		// Save non instrumented file
 		Clava.getProgram().children[0].write(Io.mkdir(outputFolder, "original"));
 
@@ -73,10 +75,12 @@ aspectdef StressTest
     		var exe = cmaker.build(cmakelistsFolder, buildFolder);
 
 		// Run program
-		 var executor = new ProcessExecutor();
+		debug("Running compiled program...");
+		var executor = new ProcessExecutor();
     		executor.setPrintToConsole(false)
     			.execute([exe.getAbsolutePath()]);
-
+		debug("Done running");
+		
 		// Save instrumented file
 		Clava.getProgram().children[0].write(outputFolder);
 
