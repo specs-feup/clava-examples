@@ -68,13 +68,16 @@ aspectdef StressTest
 		var graphFile = Io.getPath(outputFolder, benchName + ".dot");
 
 		// Apply dynamic call graph	
+		debug("Instrumenting Dynamic Call Graph");									
 		var dcgStart = System.nanos();	
 		call DynamicCallGraph(Io.getAbsolutePath(graphFile));
 		var dcgTime = System.toc(dcgStart);
+		debug("Dynamic Call Graph done: " + dcgTime);								 
 
 		// Count lines after parsing, after instrumentation
 		var linesAfterDcg = countNonBlankLines(Clava.getProgram().children[0].code);
 		var linesInserted = linesAfterDcg - linesBeforeDcg;
+		debug("Lines inserted: " + linesInserted);									
 
 
 		// Compile program
