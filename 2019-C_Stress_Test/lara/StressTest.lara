@@ -19,11 +19,13 @@ aspectdef StressTest
 	// Arguments for some of the programs
 	args = {};
 	var gccCode = Io.getPath(srcFolder, "gcc.c");
-	var gccCopy = Io.getPath(outputFolder, "gcc.c");
-	Io.copyFile(gccCode, gccCopy);
+	var bzip2Input = Io.getPath(outputFolder, "gcc_for_bzip2.c");
+	Io.copyFile(gccCode, bzip2Input);
+	var gzipInput = Io.getPath(outputFolder, "gcc_for_gzip.c");
+	Io.copyFile(gccCode, gzipInput);
 	
-	args["gzip"] = [gccCopy.getAbsolutePath(), "-f"];
-
+	args["bzip2"] = [bzip2Input.getAbsolutePath(), "-f"];
+	args["gzip"] = [gzipInput.getAbsolutePath(), "-f"];
 	
 	// Object to collect data
 	var stats = {};
@@ -33,7 +35,7 @@ aspectdef StressTest
 		println("Processing file '"+srcFile+"'");
 
 		var benchName = Io.removeExtension(srcFile.getName());
-		if(srcFile.getName() !== "NAS_MG.c") {
+		if(srcFile.getName() !== "bzip2.c") {
 			continue;
 		}
 		
@@ -94,7 +96,7 @@ aspectdef StressTest
 		debug("Running compiled program: " + command.join(" "));
 		var executor = new ProcessExecutor();
     		executor.setPrintToConsole(false)
-    			.execute(extraArgs);
+    			.execute(command);
 		debug("Done running");
 		
 		// Save instrumented file
