@@ -15,6 +15,11 @@ aspectdef StressTest
 	var srcFolder = Io.getPath(Clava.getData().getContextFolder(), srcFoldername);
 	var outputFolder = Io.mkdir(Clava.getData().getContextFolder(), "output");
 	var cmakeFolder = Io.mkdir(Clava.getData().getContextFolder(), "cmake-build");
+
+	// Arguments for some of the programs
+	args = {};
+	args["gzip"] = [Io.getPath(srcFolder, "gcc.zip").getAbsolutePath()];
+
 	
 	// Object to collect data
 	var stats = {};
@@ -39,7 +44,7 @@ aspectdef StressTest
 		// Count Clava nodes before instrumentation
 		debug("Counting nodes before instrumentation...");
 		var clavaNodes = Clava.getProgram().children[0].descendants.length;
-		debug("Done, found " + clavaNode + " nodes");
+		debug("Done, found " + clavaNodes + " nodes");
 		
 		// Count lines after parsing but before instrumentation
 		var linesBeforeDcg = countNonBlankLines(Clava.getProgram().children[0].code);
@@ -74,11 +79,18 @@ aspectdef StressTest
 		var buildFolder = Io.mkdir(cmakelistsFolder, "build");
     		var exe = cmaker.build(cmakelistsFolder, buildFolder);
 
+		// Prepare command
+		var command = [exe.getAbsolutePath()];
+		var extraArgs = args[benchName];
+		if(extraArgs !== undefined) {
+			command = command.concat(extraArgs);
+		}
+		
 		// Run program
-		debug("Running compiled program...");
+		debug("Running compiled program: " + command.join(" "));
 		var executor = new ProcessExecutor();
     		executor.setPrintToConsole(false)
-    			.execute([exe.getAbsolutePath()]);
+    			.execute(extraArgs);
 		debug("Done running");
 		
 		// Save instrumented file
