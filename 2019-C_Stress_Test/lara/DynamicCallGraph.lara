@@ -4,6 +4,10 @@ import lara.code.Logger;
 
 /**
  * Instruments code in order to build a runtime call graph.
+ *
+ * Does not take into account execution when functions are called as part of a short-circuit operation
+ * e.g., foo() || foo2(), in this case both calls will be counted.
+ * To avoid this, the code can be transformed prior to applying this aspect.
  */
 aspectdef DynamicCallGraph
 	input graphFile end
@@ -17,7 +21,7 @@ aspectdef DynamicCallGraph
     select function.call end
     apply
         var id = obj.getId($function.name, $call.name);
-        $call. insert after '[[dcgName]][ [[id]] ]++;';
+		insertIncrement($call, dcgName + '[ '+id+' ]++;');
     end
 
 
@@ -86,4 +90,29 @@ aspectdef DynamicCallGraph
     Clava.getProgram().atexit($callgraph);
 
     println('\nDynamicCallGraph done!');
+	//println(Clava.getProgram().code);
 end
+
+
+function insertIncrement($call, code) {
+	// If call is inside a loop header (e.g., for, while), 
+	// insert increment at the beginning of the loop body
+	if($call.isInsideLoopHeader) {
+		var $loop = $call.ancestor('loop');
+		checkDefined($loop);
+		$loop.body.insertBegin(code);
+		return;
+	}
+
+/*
+	// If inside return stmt, insert increment before
+	var $return = $call.ancestor('return');
+	if($return !== undefined) {
+		$return.insert before code;
+		return;
+	}
+*/
+
+	$call.insert before code;
+}
+		

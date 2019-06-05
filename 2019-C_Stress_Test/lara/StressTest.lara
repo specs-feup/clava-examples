@@ -40,7 +40,7 @@ aspectdef StressTest
 		println("Processing file '"+srcFile+"'");
 
 		var benchName = Io.removeExtension(srcFile.getName());
-		if(srcFile.getName() !== "oggenc.c") {
+		if(srcFile.getName() !== "bzip2.c") {
 			continue;
 		}
 		
