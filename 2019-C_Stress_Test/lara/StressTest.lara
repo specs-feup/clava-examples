@@ -24,7 +24,7 @@ aspectdef StressTest
 		println("Processing file '"+srcFile+"'");
 
 		var benchName = Io.removeExtension(srcFile.getName());
-		if(srcFile.getName() !== "NAS_IS.c") {
+		if(srcFile.getName() !== "NAS_MG.c") {
 			continue;
 		}
 		
@@ -61,7 +61,7 @@ aspectdef StressTest
 
 		// Compile program
 		var cmaker = new CMaker("callgraph", false);
-    		cmaker.addCurrentAst();
+    		cmaker.addCurrentAst().addLibs("m");
 
     		if(Platforms.isWindows()) {
     			cmaker.setGenerator("MinGW Makefiles")
