@@ -18,7 +18,11 @@ aspectdef StressTest
 
 	// Arguments for some of the programs
 	args = {};
-	args["gzip"] = [Io.getPath(srcFolder, "gcc.zip").getAbsolutePath()];
+	var gccCode = Io.getPath(srcFolder, "gcc.c");
+	var gccCopy = Io.getPath(outputFolder, "gcc.c");
+	Io.copyFile(gccCode, gccCopy);
+	
+	args["gzip"] = [gccCopy.getAbsolutePath(), "-f"];
 
 	
 	// Object to collect data
