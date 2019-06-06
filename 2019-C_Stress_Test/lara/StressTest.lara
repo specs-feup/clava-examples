@@ -13,6 +13,7 @@ aspectdef StressTest
 
 	setDebug();
 	var srcFolder = Io.getPath(Clava.getData().getContextFolder(), srcFoldername);
+	var inputFolder = Io.mkdir(Clava.getData().getContextFolder(), "input");
 	var outputFolder = Io.mkdir(Clava.getData().getContextFolder(), "output");
 	var cmakeFolder = Io.mkdir(Clava.getData().getContextFolder(), "cmake-build");
 
@@ -24,13 +25,17 @@ aspectdef StressTest
 	var gzipInput = Io.getPath(outputFolder, "gcc_for_gzip.c");
 	Io.copyFile(gccCode, gzipInput);
 
-	var oggencInput = Io.getPath(srcFolder, "pservice-bell_daniel_simion.wav");
+	var oggencInput = Io.getPath(inputFolder, "pservice-bell_daniel_simion.wav");
 	var oggencOutput = Io.getPath(outputFolder, "pservice-bell_daniel_simion.ogg");
 	Io.copyFile(gccCode, gzipInput);
+
+	var gccInput = Io.getPath(inputFolder, "gcc_test.c");
+	var gccOutput = Io.getPath(outputFolder, "gcc_test.s");
 	
 	args["bzip2"] = [bzip2Input.getAbsolutePath(), "-f"];
 	args["gzip"] = [gzipInput.getAbsolutePath(), "-f"];
-	args["oggenc"] = [gzipInput.getAbsolutePath(), "-o="+oggencOutput.getAbsolutePath(), "-Q"];
+	args["oggenc"] = [oggencInput.getAbsolutePath(), "-o="+oggencOutput.getAbsolutePath(), "-Q"];
+	args["gcc"] = [gccInput.getAbsolutePath(), "-o", gccOutput.getAbsolutePath()];
 	
 	// Object to collect data
 	var stats = {};
@@ -40,7 +45,7 @@ aspectdef StressTest
 		println("Processing file '"+srcFile+"'");
 
 		var benchName = Io.removeExtension(srcFile.getName());
-		if(srcFile.getName() !== "bzip2.c") {
+		if(srcFile.getName() !== "gcc.c") {
 			continue;
 		}
 		
@@ -68,16 +73,13 @@ aspectdef StressTest
 		var graphFile = Io.getPath(outputFolder, benchName + ".dot");
 
 		// Apply dynamic call graph	
-		debug("Instrumenting Dynamic Call Graph");									
 		var dcgStart = System.nanos();	
 		call DynamicCallGraph(Io.getAbsolutePath(graphFile));
 		var dcgTime = System.toc(dcgStart);
-		debug("Dynamic Call Graph done: " + dcgTime);								 
 
 		// Count lines after parsing, after instrumentation
 		var linesAfterDcg = countNonBlankLines(Clava.getProgram().children[0].code);
 		var linesInserted = linesAfterDcg - linesBeforeDcg;
-		debug("Lines inserted: " + linesInserted);									
 
 
 		// Compile program
