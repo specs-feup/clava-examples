@@ -2,17 +2,26 @@ import clava.ClavaJoinPoints;
 import clava.Clava;
 import lara.code.Logger;
 import lara.util.TupleId;
+/**
+ * Inserts code for increments as a comma operator,
+ * as suggested by Pedro Silva (up201304961@fc.up.pt)
+ */
+var _DCG_USE_COMMA_OPERATOR_ = true;
 
 /**
  * Instruments code in order to build a runtime call graph.
  *
- * Does not take into account execution when functions are called as part of a short-circuit operation
- * e.g., foo() || foo2(), in this case both calls will be counted.
- * To avoid this, the code can be transformed prior to applying this aspect.
+ * If _DCG_USE_COMMA_OPERATOR_ is true, it will take into account execution 
+ * when functions are called as part of a short-circuit operation,
+ * e.g., foo() || foo2(), when foo() returns true, the call to foo2() is not counted.
+ * However, if for any reason the comma operator cannot be used, 
+ * set _DCG_USE_COMMA_OPERATOR_ to false (it is true by default), 
+ * and an alternative method is used that will not take into account short-circuit operators.
  */
 aspectdef DynamicCallGraph
 	input graphFile end
 
+	
 	var tupleId = new TupleId();
 
 	var dcgName = "clava_dcg_global";
@@ -20,8 +29,8 @@ aspectdef DynamicCallGraph
     /* Instrument function calls and increment the corresponding position */
     select function.call end
     apply
-		var id = tupleId.getId($function.name, $call.name);
-		insertIncrement($call, dcgName + '[ '+id+' ]++;');
+        var id = tupleId.getId($function.name, $call.name);
+		insertIncrement($call, dcgName + '[ '+id+' ]++');
     end
 
 	// Get tuples and count them
@@ -30,7 +39,6 @@ aspectdef DynamicCallGraph
 	for(var key in tuples) {
 		total++;
 	}
-	
     /* Declare the array in each file */
     select file.function end
     apply
@@ -74,17 +82,14 @@ aspectdef DynamicCallGraph
 
 	for(var id in tuples) {
 		var tuple = tuples[id];
-		
         var dcgCount = dcgName+"["+id+"]";
         $lastStmt = $lastStmt.insertAfter(ClavaJoinPoints.ifStmt(dcgCount + " != 0"));
-        
+             
         graphLogger.append("\t"+tuple[0]+" -> "+tuple[1]+' [label=\\"')
-        	.int(dcgCount)
-        	.append('\\"];').ln()
-        	.logBefore($lastStmt.then);		
-		
+        		.int(dcgCount)
+        		.append('\\"];').ln()
+        		.logBefore($lastStmt.then);
 	}
-
 
 	graphLogger.append("}").ln().log($lastStmt);
 
@@ -100,6 +105,23 @@ end
 
 
 function insertIncrement($call, code) {
+	// Increments using comma operator
+	if(_DCG_USE_COMMA_OPERATOR_) {
+		// First, replace call with parenthesis
+		$parenthesis = $call.replaceWith(ClavaJoinPoints.parenthesis("/* DCG TEMP */"));
+
+		// Create comma operator
+		var $commaOp = ClavaJoinPoints.binaryOp("comma", code, $call, $call.type);
+	
+		// Replace parenthesis child
+		$parenthesis.children[0].replaceWith($commaOp);
+		
+		return;
+	}
+
+	// Increments using statements, add ;
+	code += ";";
+		
 	// If call is inside a loop header (e.g., for, while), 
 	// insert increment at the beginning of the loop body
 	if($call.isInsideLoopHeader) {
@@ -109,15 +131,7 @@ function insertIncrement($call, code) {
 		return;
 	}
 
-/*
-	// If inside return stmt, insert increment before
-	var $return = $call.ancestor('return');
-	if($return !== undefined) {
-		$return.insert before code;
-		return;
-	}
-*/
-
 	$call.insert before code;
 }
+		
 		
