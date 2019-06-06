@@ -9,7 +9,7 @@ import lara.cmake.CMaker;
 import DynamicCallGraph;
 
 aspectdef StressTest
-	input srcFoldername end
+	input srcFoldername, statsFilename = "stats.json" end
 
 	setDebug();
 	var srcFolder = Io.getPath(Clava.getData().getContextFolder(), srcFoldername);
@@ -120,7 +120,7 @@ aspectdef StressTest
 		Clava.getProgram().removeChildren();
 
 		// Write stats
-		Io.writeJson(Io.getPath(Clava.getData().getContextFolder(), "stats.json"), stats);
+		Io.writeJson(Io.getPath(Clava.getData().getContextFolder(), statsFilename), stats);
 	}catch(e) {
 		println("Skipping " + srcFile + ", there are problems: " + e);
 
@@ -193,7 +193,7 @@ function countNonBlankLines(code) {
 
 		counter++;
 	}
-println("LINES:" + counter);
+//println("LINES:" + counter);
 	return counter;
 }
 
