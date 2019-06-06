@@ -1,0 +1,43 @@
+digraph dynamic_call_graph {
+
+	main -> printf [label="25"];
+	main -> set_constants [label="1"];
+	main -> timer_clear [label="30"];
+	main -> exact_rhs [label="1"];
+	main -> initialize [label="2"];
+	main -> adi [label="401"];
+	main -> timer_start [label="1"];
+	main -> timer_stop [label="1"];
+	main -> timer_read [label="1"];
+	main -> verify [label="1"];
+	main -> print_results [label="1"];
+	error_norm -> exact_solution [label="46656"];
+	error_norm -> sqrt [label="5"];
+	rhs_norm -> sqrt [label="5"];
+	exact_rhs -> exact_solution [label="124848"];
+	adi -> compute_rhs [label="401"];
+	adi -> txinvr [label="401"];
+	adi -> x_solve [label="401"];
+	adi -> y_solve [label="401"];
+	adi -> z_solve [label="401"];
+	adi -> add [label="401"];
+	initialize -> exact_solution [label="575424"];
+	compute_rhs -> sqrt [label="18755712"];
+	verify -> error_norm [label="1"];
+	verify -> compute_rhs [label="1"];
+	verify -> rhs_norm [label="1"];
+	verify -> fabs [label="11"];
+	verify -> printf [label="15"];
+	x_solve -> lhsinit [label="13634"];
+	x_solve -> ninvr [label="401"];
+	y_solve -> lhsinitj [label="13634"];
+	y_solve -> pinvr [label="401"];
+	z_solve -> lhsinitj [label="13634"];
+	z_solve -> tzetar [label="401"];
+	set_constants -> sqrt [label="1"];
+	print_results -> printf [label="8"];
+	wtime -> gettimeofday [label="2"];
+	elapsed_time -> wtime [label="2"];
+	timer_start -> elapsed_time [label="1"];
+	timer_stop -> elapsed_time [label="1"];
+}

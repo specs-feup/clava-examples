@@ -1,0 +1,26 @@
+digraph dynamic_call_graph {
+
+	main -> timer_clear [label="3"];
+	main -> timer_start [label="2"];
+	main -> printf [label="25"];
+	main -> randlc [label="1"];
+	main -> makea [label="1"];
+	main -> conj_grad [label="16"];
+	main -> sqrt [label="16"];
+	main -> timer_stop [label="2"];
+	main -> timer_read [label="2"];
+	main -> fabs [label="1"];
+	main -> print_results [label="1"];
+	conj_grad -> sqrt [label="16"];
+	makea -> sprnvc [label="7000"];
+	makea -> vecset [label="7000"];
+	makea -> sparse [label="1"];
+	sparse -> pow [label="1"];
+	sprnvc -> randlc [label="130968"];
+	sprnvc -> icnvrt [label="65484"];
+	wtime -> gettimeofday [label="4"];
+	elapsed_time -> wtime [label="4"];
+	timer_start -> elapsed_time [label="2"];
+	timer_stop -> elapsed_time [label="2"];
+	print_results -> printf [label="8"];
+}

@@ -1,0 +1,18 @@
+digraph dynamic_call_graph {
+
+	create_seq -> randlc [label="4194304"];
+	main -> timer_clear [label="1"];
+	main -> printf [label="14"];
+	main -> create_seq [label="1"];
+	main -> rank [label="11"];
+	main -> timer_start [label="1"];
+	main -> timer_stop [label="1"];
+	main -> timer_read [label="1"];
+	main -> full_verify [label="1"];
+	main -> c_print_results [label="1"];
+	c_print_results -> printf [label="8"];
+	wtime -> gettimeofday [label="2"];
+	elapsed_time -> wtime [label="2"];
+	timer_start -> elapsed_time [label="1"];
+	timer_stop -> elapsed_time [label="1"];
+}

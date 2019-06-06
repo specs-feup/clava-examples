@@ -1,0 +1,24 @@
+digraph dynamic_call_graph {
+
+	main -> parse_options [label="1"];
+	main -> fprintf [label="1"];
+	main -> strcmp [label="2"];
+	main -> srand [label="1"];
+	main -> time [label="1"];
+	main -> rand [label="1"];
+	main -> build_comments [label="1"];
+	main -> fopen [label="1"];
+	main -> strerror [label="1"];
+	main -> __errno_location [label="1"];
+	main -> free [label="1"];
+	parse_options -> getopt_long [label="2"];
+	parse_options -> strdup [label="1"];
+	build_comments -> vorbis_comment_init [label="1"];
+	_getopt_initialize -> getenv [label="1"];
+	_getopt_internal -> _getopt_initialize [label="1"];
+	_getopt_internal -> exchange [label="2"];
+	_getopt_internal -> strcmp [label="3"];
+	_getopt_internal -> strchr [label="4"];
+	getopt_long -> _getopt_internal [label="3"];
+	vorbis_comment_init -> memset [label="1"];
+}

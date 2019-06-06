@@ -1,0 +1,40 @@
+digraph dynamic_call_graph {
+
+	main -> timer_clear [label="19"];
+	main -> timer_start [label="2"];
+	main -> printf [label="12"];
+	main -> setup [label="2"];
+	main -> zero3 [label="2"];
+	main -> zran3 [label="2"];
+	main -> norm2u3 [label="4"];
+	main -> resid [label="7"];
+	main -> mg3P [label="5"];
+	main -> timer_stop [label="2"];
+	main -> timer_read [label="2"];
+	main -> fabs [label="1"];
+	main -> print_results [label="1"];
+	mg3P -> rprj3 [label="30"];
+	mg3P -> zero3 [label="30"];
+	mg3P -> psinv [label="35"];
+	mg3P -> interp [label="30"];
+	mg3P -> resid [label="30"];
+	psinv -> comm3 [label="35"];
+	resid -> comm3 [label="37"];
+	rprj3 -> comm3 [label="30"];
+	norm2u3 -> pow [label="8388608"];
+	norm2u3 -> fabs [label="8388608"];
+	norm2u3 -> sqrt [label="4"];
+	zran3 -> pow [label="2"];
+	zran3 -> power [label="6"];
+	zran3 -> zero3 [label="2"];
+	zran3 -> randlc [label="33026"];
+	zran3 -> vranlc [label="32768"];
+	zran3 -> bubble [label="522"];
+	zran3 -> comm3 [label="2"];
+	power -> randlc [label="50"];
+	print_results -> printf [label="8"];
+	wtime -> gettimeofday [label="4"];
+	elapsed_time -> wtime [label="4"];
+	timer_start -> elapsed_time [label="2"];
+	timer_stop -> elapsed_time [label="2"];
+}

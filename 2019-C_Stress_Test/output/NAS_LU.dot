@@ -1,0 +1,40 @@
+digraph dynamic_call_graph {
+
+	main -> read_input [label="1"];
+	main -> domain [label="1"];
+	main -> setcoeff [label="1"];
+	main -> setbv [label="2"];
+	main -> setiv [label="2"];
+	main -> erhs [label="1"];
+	main -> ssor [label="2"];
+	main -> error [label="1"];
+	main -> pintgr [label="1"];
+	main -> verify [label="1"];
+	main -> pow [label="1"];
+	main -> print_results [label="1"];
+	error -> exact [label="29791"];
+	error -> sqrt [label="5"];
+	l2norm -> sqrt [label="20"];
+	read_input -> printf [label="4"];
+	read_input -> fopen [label="1"];
+	setbv -> exact [label="13068"];
+	setiv -> exact [label="357492"];
+	ssor -> timer_clear [label="44"];
+	ssor -> rhs [label="303"];
+	ssor -> l2norm [label="4"];
+	ssor -> timer_start [label="2"];
+	ssor -> printf [label="16"];
+	ssor -> jacld [label="9331"];
+	ssor -> blts [label="9331"];
+	ssor -> jacu [label="9331"];
+	ssor -> buts [label="9331"];
+	ssor -> timer_stop [label="2"];
+	ssor -> timer_read [label="2"];
+	verify -> fabs [label="12"];
+	verify -> printf [label="17"];
+	print_results -> printf [label="8"];
+	wtime -> gettimeofday [label="4"];
+	elapsed_time -> wtime [label="4"];
+	timer_start -> elapsed_time [label="2"];
+	timer_stop -> elapsed_time [label="2"];
+}

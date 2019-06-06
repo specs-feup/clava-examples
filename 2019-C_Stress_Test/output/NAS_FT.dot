@@ -1,0 +1,37 @@
+digraph dynamic_call_graph {
+
+	main -> printf [label="4"];
+	main -> getclass [label="1"];
+	main -> appft [label="1"];
+	main -> log [label="2"];
+	main -> print_results [label="1"];
+	appft -> timer_clear [label="15"];
+	appft -> timer_start [label="2"];
+	appft -> compute_initial_conditions [label="2"];
+	appft -> CompExp [label="3"];
+	appft -> fftXYZ [label="8"];
+	appft -> timer_stop [label="2"];
+	appft -> exp [label="524288"];
+	appft -> evolve [label="6"];
+	appft -> CalculateChecksum [label="6"];
+	appft -> verify [label="1"];
+	appft -> timer_read [label="1"];
+	CompExp -> ilog2 [label="3"];
+	CompExp -> cos [label="285"];
+	CompExp -> sin [label="285"];
+	ipow46 -> randlc [label="32"];
+	CalculateChecksum -> printf [label="6"];
+	compute_initial_conditions -> ipow46 [label="4"];
+	compute_initial_conditions -> randlc [label="64"];
+	compute_initial_conditions -> vranlc [label="8192"];
+	fftXYZ -> ilog2 [label="24"];
+	fftXYZ -> Swarztrauber [label="6144"];
+	verify -> printf [label="1"];
+	verify -> sqrt [label="6"];
+	verify -> dcmplx_div [label="24"];
+	print_results -> printf [label="8"];
+	wtime -> gettimeofday [label="4"];
+	elapsed_time -> wtime [label="4"];
+	timer_start -> elapsed_time [label="2"];
+	timer_stop -> elapsed_time [label="2"];
+}

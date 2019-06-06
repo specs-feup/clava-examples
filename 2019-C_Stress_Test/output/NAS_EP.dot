@@ -1,0 +1,23 @@
+digraph dynamic_call_graph {
+
+	main -> sprintf [label="1"];
+	main -> pow [label="2"];
+	main -> printf [label="18"];
+	main -> vranlc [label="514"];
+	main -> randlc [label="5908"];
+	main -> log [label="26354770"];
+	main -> sqrt [label="26354770"];
+	main -> fabs [label="105419079"];
+	main -> timer_clear [label="3"];
+	main -> timer_start [label="1"];
+	main -> timer_stop [label="1"];
+	main -> timer_read [label="1"];
+	main -> print_results [label="1"];
+	print_results -> printf [label="8"];
+	print_results -> sprintf [label="1"];
+	print_results -> pow [label="1"];
+	wtime -> gettimeofday [label="2"];
+	elapsed_time -> wtime [label="2"];
+	timer_start -> elapsed_time [label="1"];
+	timer_stop -> elapsed_time [label="1"];
+}
