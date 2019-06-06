@@ -45,9 +45,9 @@ aspectdef StressTest
 		println("Processing file '"+srcFile+"'");
 
 		var benchName = Io.removeExtension(srcFile.getName());
-		if(srcFile.getName() !== "gcc.c") {
-			continue;
-		}
+		//if(srcFile.getName() !== "gcc.c") {
+		//	continue;
+		//}
 		
 		// Add program
 		Clava.getProgram().addFileFromPath(srcFile);
