@@ -19,7 +19,7 @@ var _DCG_USE_COMMA_OPERATOR_ = true;
  * and an alternative method is used that will not take into account short-circuit operators.
  */
 aspectdef DynamicCallGraph
-	input graphFile end
+	input graphFile = "dcg.dotty" end
 
 	
 	var tupleId = new TupleId();
@@ -114,7 +114,7 @@ function insertIncrement($call, code) {
 		var $commaOp = ClavaJoinPoints.binaryOp("comma", code, $call, $call.type);
 	
 		// Replace parenthesis child
-		$parenthesis.children[0].replaceWith($commaOp);
+		$parenthesis.firstChild = $commaOp;
 		
 		return;
 	}
