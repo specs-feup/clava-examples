@@ -1,2 +1,2 @@
--p $BASE/src;$BASE/srcFolderExtra;$BASE/test9.c
--pe $BASE/test3.c;$BASE/../test4.c$$BASE/src2$test5.c;test6.c;lib\lib2.c;lib\lib2\lib6.c$$BASE/nested$srcFolderExtra2
+-p $BASE/src$SEP$BASE/srcFolderExtra$SEP$BASE/test9.c
+-pe $BASE/test3.c$SEP$BASE/../test4.c$$BASE/src2$test5.c$SEPtest6.c$SEPlib\lib2.c$SEPlib\lib2\lib6.c$$BASE/nested$srcFolderExtra2
