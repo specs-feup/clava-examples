@@ -11,6 +11,9 @@ import DynamicCallGraph;
 aspectdef StressTest
 	input srcFoldername, statsFilename = "stats.json" end
 
+	// To replicate published line diff results, uncomment this line
+	//_DCG_USE_COMMA_OPERATOR_ = false;
+
 	setDebug();
 	var srcFolder = Io.getPath(Clava.getData().getContextFolder(), srcFoldername);
 	var inputFolder = Io.mkdir(Clava.getData().getContextFolder(), "input");
