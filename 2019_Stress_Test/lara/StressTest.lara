@@ -39,7 +39,6 @@ aspectdef StressTest
 	args["gzip"] = [gzipInput.getAbsolutePath(), "-f"];
 	args["oggenc"] = [oggencInput.getAbsolutePath(), "-o="+oggencOutput.getAbsolutePath(), "-Q"];
 	args["gcc"] = [gccInput.getAbsolutePath(), "-o", gccOutput.getAbsolutePath()];
-	
 	// Object to collect data
 	var stats = {};
 
@@ -68,8 +67,9 @@ aspectdef StressTest
 		// Count lines after parsing but before instrumentation
 		var linesBeforeDcg = countNonBlankLines(Clava.getProgram().children[0].code);
 		
-		// Save non instrumented file
-		Clava.getProgram().children[0].write(Io.mkdir(outputFolder, "original"));
+		// Save non instrumented file	
+		var originalFolder = Io.mkdir(outputFolder, "original");
+		Clava.getProgram().children[0].write(originalFolder.getAbsolutePath());
 
 
 		// Graph file
@@ -113,7 +113,7 @@ aspectdef StressTest
 		debug("Done running");
 		
 		// Save instrumented file
-		Clava.getProgram().children[0].write(outputFolder);
+		Clava.getProgram().children[0].write(outputFolder.getAbsolutePath());
 
 		// Collect stats
 		stats[srcFile.getName()] = collectStats(srcFile, clavaNodes, linesInserted, 
@@ -141,7 +141,7 @@ end
 function collectStats(srcFile, clavaNodes, linesInserted, parsingTime, dcgTime, graphFile) {
 	var stats = {};
 
-	stats["Code Lines"] = Io.readFile(srcFile).lines().count();
+	stats["Code Lines"] = Strings.asLines(Io.readFile(srcFile)).length;
 	stats["Clava Nodes"] = clavaNodes;
 	stats["Inserted Lines"] = linesInserted;
 	stats["Parsing"] = parsingTime;
@@ -154,7 +154,7 @@ function collectStats(srcFile, clavaNodes, linesInserted, parsingTime, dcgTime, 
 	var nodes = new StringSet();
 	
 	for(var line of Strings.asLines(callGraph)) {
-		if(line.isBlank() || line.startsWith("}") || line.startsWith("digraph dynamic_call_graph")) {
+		if(Strings.isEmpty(line) || line.startsWith("}") || line.startsWith("digraph dynamic_call_graph")) {
 			continue;
 		}
 
@@ -179,18 +179,18 @@ function collectStats(srcFile, clavaNodes, linesInserted, parsingTime, dcgTime, 
 function countNonBlankLines(code) {
 	var counter = 0;
 	for(var line of Strings.asLines(code)) {
-		if(line.isBlank()) {
+		if(Strings.isEmpty(line)) {
 		//if(line.strip().isEmpty()) {
 			continue;
 		}
 
 		// Do not count cases where {} where inserted
-		var strippedLine = line.strip();
-		if(strippedLine.equals("{")) {
+		var strippedLine = line.trim();
+		if(strippedLine === "{") {
 			continue;
 		}
 
-		if(strippedLine.equals("}")) {
+		if(strippedLine === "}") {
 			continue;
 		}
 
