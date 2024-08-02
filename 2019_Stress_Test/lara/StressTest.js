@@ -5,6 +5,7 @@ laraImport("lara.Platforms");
 laraImport("lara.util.StringSet");
 laraImport("clava.Clava");
 laraImport("clava.cmake.CMaker");
+laraImport("weaver.Weaver");
 
 laraImport("./lara/DynamicCallGraph");
 
@@ -240,3 +241,6 @@ function countNonBlankLines(code) {
     }
     return counter;
 }
+
+const argv = Weaver.laraArgs;
+StressTest(argv["srcFoldername"], argv["statsFilename"]);

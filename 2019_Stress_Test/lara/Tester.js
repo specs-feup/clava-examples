@@ -1,3 +1,5 @@
+laraImport("weaver.Weaver");
+
 laraImport("./lara/StressTest");
 
 function Tester(repetitions = 3) {
@@ -11,3 +13,5 @@ function Tester(repetitions = 3) {
         console.log("Results saved to " + statsFilename);
     }
 }
+
+StressTest(Weaver.laraArgs["repetitions"]);
