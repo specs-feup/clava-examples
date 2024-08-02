@@ -1,16 +1,13 @@
-import StressTest;
+laraImport("StressTest");
 
-aspectdef Tester
-	input repetitions = 3 end
+function Tester(repetitions = 3) {
+    console.log("Calling StressTest " + repetitions + " times");
+    for (let i = 0; i < repetitions; i++) {
+        const index = i + 1;
+        console.log("StressTest " + index + "/" + repetitions);
+        const statsFilename = "stats_" + index + ".json";
 
-	println("Calling StressTest " + repetitions + " times");
-	for(var i=0; i<repetitions; i++) {
-		var index = i + 1;
-		println("StressTest " + index + "/" + repetitions);
-		var statsFilename = "stats_" + index + ".json";
-		
-		call StressTest("src", statsFilename);
-		println("Results saved to " + statsFilename);
-	}
-
-end
+        StressTest("src", statsFilename);
+        console.log("Results saved to " + statsFilename);
+    }
+}

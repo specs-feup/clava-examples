@@ -1,137 +1,152 @@
-import clava.ClavaJoinPoints;
-import clava.Clava;
-import lara.code.Logger;
-import lara.util.TupleId;
+laraImport("clava.ClavaJoinPoints");
+laraImport("clava.Clava");
+laraImport("lara.code.Logger");
+laraImport("lara.util.TupleId");
+laraImport("weaver.Query");
+
 /**
  * Inserts code for increments as a comma operator,
  * as suggested by Pedro Silva (up201304961@fc.up.pt)
  */
-var _DCG_USE_COMMA_OPERATOR_ = true;
+const _DCG_USE_COMMA_OPERATOR_ = true;
 
 /**
  * Instruments code in order to build a runtime call graph.
  *
- * If _DCG_USE_COMMA_OPERATOR_ is true, it will take into account execution 
+ * If _DCG_USE_COMMA_OPERATOR_ is true, it will take into account execution
  * when functions are called as part of a short-circuit operation,
  * e.g., foo() || foo2(), when foo() returns true, the call to foo2() is not counted.
- * However, if for any reason the comma operator cannot be used, 
- * set _DCG_USE_COMMA_OPERATOR_ to false (it is true by default), 
+ * However, if for any reason the comma operator cannot be used,
+ * set _DCG_USE_COMMA_OPERATOR_ to false (it is true by default),
  * and an alternative method is used that will not take into account short-circuit operators.
  */
-aspectdef DynamicCallGraph
-	input graphFile = "dcg.dotty" end
+function DynamicCallGraph(graphFile = "dcg.dotty") {
+    const tupleId = new TupleId();
 
-	
-	var tupleId = new TupleId();
-
-	var dcgName = "clava_dcg_global";
+    const dcgName = "clava_dcg_global";
 
     /* Instrument function calls and increment the corresponding position */
-    select function.call end
-    apply
-        var id = tupleId.getId($function.name, $call.name);
-		insertIncrement($call, dcgName + '[ '+id+' ]++');
-    end
+    for (const chain of Query.search("function").search("call").chain()) {
+        const $function = chain["function"];
+        const $call = chain["call"];
 
-	// Get tuples and count them
-	var tuples = tupleId.getTuples();
-    var total = 0;
-	for(var key in tuples) {
-		total++;
-	}
+        const id = tupleId.getId($function.name, $call.name);
+        insertIncrement($call, dcgName + "[ " + id + " ]++");
+    }
+
+    // Get tuples and count them
+    const tuples = tupleId.getTuples();
+    let total = 0;
+    for (const _key in tuples) {
+        total++;
+    }
     /* Declare the array in each file */
-    select file.function end
-    apply
-        if($file.hasMain) {
-            insert before 'int [[dcgName]][ [[total]] ] = {0};';
+    for (const chain of Query.search("file").search("function").chain()) {
+        const $file = chain["file"];
+        const $function = chain["function"];
+
+        if ($file.hasMain) {
+            $function.insertBefore("int [[dcgName]][ [[total]] ] = {0};");
         } else {
-            insert before 'extern int [[dcgName]][ [[total]] ];';
+            $function.insertBefore("extern int [[dcgName]][ [[total]] ];");
         }
         break;
-    end
+    }
 
+    // Build function to print call graph
+    const callgraphFunctionName = "clava_call_graph";
+    const $callgraph = ClavaJoinPoints.functionDecl(
+        callgraphFunctionName,
+        ClavaJoinPoints.builtinType("void")
+    );
+    $callgraph.setBody(ClavaJoinPoints.scope());
 
-	// Build function to print call graph
-	var callgraphFunctionName = "clava_call_graph";
-	var $callgraph = ClavaJoinPoints.functionDecl(callgraphFunctionName, ClavaJoinPoints.builtinType("void"));
-	$callgraph.setBody(ClavaJoinPoints.scope());
-	
-	// Using a comment as a marker for log insertions
-	var $markerStmt = $callgraph.body.insertBegin(ClavaJoinPoints.stmtLiteral("// MARKER"));
+    // Using a comment as a marker for log insertions
+    const $markerStmt = $callgraph.body.insertBegin(
+        ClavaJoinPoints.stmtLiteral("// MARKER")
+    );
 
     // Insert function before main
-    select program.function{"main"} end
-    apply
-    		// Just before main declaration
-    		if(!$function.hasDefinition) {
-    			continue;
-    		}
-    		
- 		$function.insertBefore($callgraph);
+    for (const $function of Query.search("function", "main")) {
+        // Just before main declaration
+        if (!$function.hasDefinition) {
+            continue;
+        }
 
-		// Insert only once
- 		break;
-    end
+        $function.insertBefore($callgraph);
 
-	var graphLogger = new Logger(false, graphFile);
-	graphLogger.append("digraph dynamic_call_graph {")
-		.ln().ln().log($markerStmt);
+        // Insert only once
+        break;
+    }
 
+    const graphLogger = new Logger(false, graphFile);
+    graphLogger
+        .append("digraph dynamic_call_graph {")
+        .ln()
+        .ln()
+        .log($markerStmt);
 
-	var $lastStmt = graphLogger.getAfterJp();
+    let $lastStmt = graphLogger.getAfterJp();
 
-	for(var id in tuples) {
-		var tuple = tuples[id];
-        var dcgCount = dcgName+"["+id+"]";
-        $lastStmt = $lastStmt.insertAfter(ClavaJoinPoints.ifStmt(dcgCount + " != 0"));
-             
-        graphLogger.append("\t"+tuple[0]+" -> "+tuple[1]+' [label=\\"')
-        		.int(dcgCount)
-        		.append('\\"];').ln()
-        		.logBefore($lastStmt.then);
-	}
+    for (const id in tuples) {
+        const tuple = tuples[id];
+        const dcgCount = dcgName + "[" + id + "]";
+        $lastStmt = $lastStmt.insertAfter(
+            ClavaJoinPoints.ifStmt(dcgCount + " != 0")
+        );
 
-	graphLogger.append("}").ln().log($lastStmt);
+        graphLogger
+            .append("\t" + tuple[0] + " -> " + tuple[1] + ' [label=\\"')
+            .int(dcgCount)
+            .append('\\"];')
+            .ln()
+            .logBefore($lastStmt.then);
+    }
 
-	// Remove marker stmt
-	$markerStmt.detach();
+    graphLogger.append("}").ln().log($lastStmt);
 
-	// Register function to be executed when program exits
+    // Remove marker stmt
+    $markerStmt.detach();
+
+    // Register function to be executed when program exits
     Clava.getProgram().atexit($callgraph);
 
-    println('\nDynamicCallGraph done!');
-	//println(Clava.getProgram().code);
-end
-
+    console.log("\nDynamicCallGraph done!");
+}
 
 function insertIncrement($call, code) {
-	// Increments using comma operator
-	if(_DCG_USE_COMMA_OPERATOR_) {
-		// First, replace call with parenthesis
-		$parenthesis = $call.replaceWith(ClavaJoinPoints.parenthesis("/* DCG TEMP */"));
+    // Increments using comma operator
+    if (_DCG_USE_COMMA_OPERATOR_) {
+        // First, replace call with parenthesis
+        const $parenthesis = $call.replaceWith(
+            ClavaJoinPoints.parenthesis("/* DCG TEMP */")
+        );
 
-		// Create comma operator
-		var $commaOp = ClavaJoinPoints.binaryOp("comma", code, $call, $call.type);
-	
-		// Replace parenthesis child
-		$parenthesis.firstChild = $commaOp;
-		
-		return;
-	}
+        // Create comma operator
+        const $commaOp = ClavaJoinPoints.binaryOp(
+            "comma",
+            code,
+            $call,
+            $call.type
+        );
 
-	// Increments using statements, add ;
-	code += ";";
-		
-	// If call is inside a loop header (e.g., for, while), 
-	// insert increment at the beginning of the loop body
-	if($call.isInsideLoopHeader) {
-		var $loop = $call.ancestor('loop');
-		checkDefined($loop);
-		$loop.body.insertBegin(code);
-		return;
-	}
+        // Replace parenthesis child
+        $parenthesis.firstChild = $commaOp;
 
-	$call.insert before code;
+        return;
+    }
+
+    // Increments using statements, add ;
+    code += ";";
+
+    // If call is inside a loop header (e.g., for, while),
+    // insert increment at the beginning of the loop body
+    if ($call.isInsideLoopHeader) {
+        const $loop = $call.ancestor("loop");
+        checkDefined($loop);
+        $loop.body.insertBegin(code);
+        return;
+    }
+
+    $call.insertBefore(code);
 }
-		
-		
