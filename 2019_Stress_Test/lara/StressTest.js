@@ -4,9 +4,9 @@ laraImport("lara.System");
 laraImport("lara.Platforms");
 laraImport("lara.util.StringSet");
 laraImport("clava.Clava");
-laraImport("lara.cmake.CMaker");
+laraImport("clava.cmake.CMaker");
 
-laraImport("DynamicCallGraph");
+laraImport("./lara/DynamicCallGraph");
 
 function StressTest(srcFoldername, statsFilename = "stats.json") {
     // To replicate published line diff results, uncomment this line

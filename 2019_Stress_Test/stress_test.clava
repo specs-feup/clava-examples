@@ -79,7 +79,7 @@
     </entry>
     <entry>
       <string>aspect</string>
-      <file>lara\StressTest.lara</file>
+      <file>lara\StressTest.js</file>
     </entry>
     <entry>
       <string>parsingNumThreads</string>

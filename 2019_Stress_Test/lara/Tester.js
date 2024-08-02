@@ -1,4 +1,4 @@
-laraImport("StressTest");
+laraImport("./lara/StressTest");
 
 function Tester(repetitions = 3) {
     console.log("Calling StressTest " + repetitions + " times");
