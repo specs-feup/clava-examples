@@ -42,7 +42,7 @@
     </entry>
     <entry>
       <string>argv</string>
-      <string>{repetitions: 30}</string>
+      <string>{"repetitions": 30}</string>
     </entry>
     <entry>
       <string>tools</string>

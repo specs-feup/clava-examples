@@ -4,7 +4,12 @@
 **/cmake-build*/*
 **/CMakeFiles/*
 
-
+# Ignore Clava intermidiate files
+consumer_order.txt
+enum_integer_type.txt
+is_temporary.txt
+omp.txt
+types_with_templates.txt
 
 # Ignore weaved code folders
 **/weaved_code/*
