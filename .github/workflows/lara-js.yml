@@ -64,18 +64,12 @@ jobs:
       working-directory: workspace/clava/ClavaWeaver
       run: gradle installDist
 
-    # This requires CMaker, which is not working yet, and the test itself does not fail when CMake fails
-    #- name: Execute stress test
-    #  working-directory: workspace/clava-examples
-    #  run: |
-    #    ls -la
-    #    ../clava/ClavaWeaver/build/install/ClavaWeaver/bin/ClavaWeaver --config ./2019_Stress_Test/stress_test.clava
-
-    - name: Execute all-benches.clava
+    - name: Execute 'stress_test.clava'
       working-directory: workspace/clava-examples
       run: |
-        ls -la
-        ../clava/ClavaWeaver/build/install/ClavaWeaver/bin/ClavaWeaver --config ./all-benches/all-benches.clava
+    #    ls -la
+        ../clava/ClavaWeaver/build/install/ClavaWeaver/bin/ClavaWeaver --config ./2019_Stress_Test/stress_test.clava
+
 
 
     - name: Publish Test Report
