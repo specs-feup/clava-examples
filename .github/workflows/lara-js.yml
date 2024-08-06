@@ -67,14 +67,4 @@ jobs:
     - name: Execute 'stress_test.clava'
       working-directory: workspace/clava-examples
       run: |
-    #    ls -la
         ../clava/ClavaWeaver/build/install/ClavaWeaver/bin/ClavaWeaver --config ./2019_Stress_Test/stress_test.clava
-
-
-
-    - name: Publish Test Report
-      uses: mikepenz/action-junit-report@v4
-      if: always()
-      with:
-        report_paths: 'workspace/anyweaver/**/build/test-results/test/TEST-*.xml'
-        summary: true
