@@ -65,6 +65,7 @@ jobs:
     - name: Execute Clava configuration
       run: |
         ls -la        
+        java -jar Clava.jar --config ./2019_Stress_Test/stress_test.clava
 
     - name: List directory
       run: |
