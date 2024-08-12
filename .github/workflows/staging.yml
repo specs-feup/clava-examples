@@ -1,13 +1,13 @@
 # This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
 
-name: Java CI - Lara-JS
+name: Java CI - Staging
 
 on:
   push:
-    branches: [ js-refactor ]
+    branches: [ main ]
   pull_request:
-    branches: [ js-refactor ]
+    branches: [ main ]
 
   # Daily at midnight
   schedule:
@@ -25,7 +25,7 @@ jobs:
     - uses: actions/checkout@v4
       # Because of scheduled runs, by default run on default branch
       with:
-        ref: js-refactor
+        ref: main
         path: workspace/clava-examples
 
     - name: Set up JDK 17
@@ -44,14 +44,14 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: specs-feup/lara-framework
-        ref: feature/lara-js
+        ref: staging
         path: workspace/lara-framework
 
     - name: Check out Clava repo
       uses: actions/checkout@v4
       with:
         repository: specs-feup/clava
-        ref: feature/clava-js
+        ref: staging
         path: workspace/clava
 
     # Configure Gradle for optimal use in GitHub Actions, including caching of downloaded dependencies.
